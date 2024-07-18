@@ -4,8 +4,8 @@
 typedef void (*TaskFunction)(void*);
 
 typedef struct {
-  TaskFunction function;
-  void *parameters;
+    TaskFunction function;
+    void *parameters;
 } TaskItem;
 
 QueueHandle_t xTaskQueue;
@@ -27,16 +27,16 @@ void setup() {
   pinMode(12, OUTPUT);
   pinMode(11, OUTPUT);
   pinMode(10, OUTPUT);
-  pinMode(buttonPin, INPUT);
+  pinMode(buttonPin, INPUT_PULLUP);
 
   // Create a queue that can hold 5 TaskItems
   xTaskQueue = xQueueCreate(5, sizeof(TaskItem));
 
-  // Create the receiver task
-  xTaskCreate(receiverTask, "ReceiverTask", 240, NULL, 2, NULL);
+  // Create the receiver task with reduced stack size
+  xTaskCreate(receiverTask, "ReceiverTask", 128, NULL, 2, NULL);
 
-  // Create the idle task
-  xTaskCreate(idleTask, "IdleTask", 100, NULL, 0, NULL);
+  // Create the idle task with reduced stack size
+  xTaskCreate(idleTask, "IdleTask", 128, NULL, 0, NULL);
 
   // Create interrupt
   attachInterrupt(digitalPinToInterrupt(buttonPin), handleButtonInterrupt, FALLING);
@@ -45,7 +45,7 @@ void setup() {
 }
 
 void loop() {
-
+  // Empty loop as required by Arduino framework when using FreeRTOS
 }
 
 void addTask(void *pvParameters) {
@@ -89,7 +89,7 @@ void showSpecificLed(int port) {
     } else {
       digitalWrite(i, LOW);
     }
-  }
+}
 }
 
 void showLed11(void *pvParameters) {
@@ -100,13 +100,12 @@ void showLed10(void *pvParameters) {
   showSpecificLed(10);
 }
 
-void handleButtonInterrupt(void) {
+void handleButtonInterrupt() {
   if (uxQueueMessagesWaiting(xTaskQueue) >= 5) {
-    // Do nothing if queue is full
     return;
   } else if (uxQueueMessagesWaiting(xTaskQueue) == 4) {
-    xTaskCreate(fullTasks, "FullTask", 240, NULL, 1, NULL);
+    xTaskCreate(fullTasks, "FullTask", 128, NULL, 1, NULL);
   } else {
-    xTaskCreate(addTask, "AddTask", 240, NULL, 1, NULL);
+    xTaskCreate(addTask, "AddTask", 128, NULL, 1, NULL);
   }
 }
