@@ -4,8 +4,8 @@
 typedef void (*TaskFunction)(void*);
 
 typedef struct {
-    TaskFunction function;
-    void *parameters;
+  TaskFunction function;
+  void *parameters;
 } TaskItem;
 
 QueueHandle_t xTaskQueue;
@@ -89,7 +89,7 @@ void showSpecificLed(int port) {
     } else {
       digitalWrite(i, LOW);
     }
-}
+  }
 }
 
 void showLed11(void *pvParameters) {
